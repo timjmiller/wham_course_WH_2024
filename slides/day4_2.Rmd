@@ -58,8 +58,8 @@ options(width = 50)
 * Using different projection options
 ---
 
-# Abundance at age options
-The `NAA_re` argument to `prepare_wham_input` or `set_NAA` has these elements to configure selectivity.
+# Reference point options
+The `basic_info` argument to `prepare_wham_input` has these elements to configure SPR-based reference points.
 * `recruit_model`: whether to estimate recruitment as
  * (1) annual fixed effects
  * (2) a mean recruitment parameter and annual random effects,

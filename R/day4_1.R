@@ -23,3 +23,11 @@ nofit$env$data$FXSPR_static_init
 
 grep("static", names(nofit_0$rep), value = TRUE)
 plot_wham_output(nofit_0, dir.main = tmp.dir)
+
+
+#no features for estimation in phases 
+
+#have to do this by hand
+
+#using parList from previous fit
+#most important for fixed effects
