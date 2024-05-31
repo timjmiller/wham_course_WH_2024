@@ -1,4 +1,15 @@
 
+Use the "pak" package to install the lab branch of wham:
+
+install.packages("pak")
+
+then
+
+pak::pkg_install("timjmiller/wham@lab")
+
+if you want to install to a specific location called "this_package_directory"
+
+pak::pkg_install("timjmiller/wham@lab", lib = "this_package_directory")
 
 
 ****************************
