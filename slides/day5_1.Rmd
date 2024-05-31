@@ -1,0 +1,96 @@
+---
+title:  "Abundance at age, natural mortality, and catchability in WHAM"
+subtitle: ""
+author: "Tim Miller<br>NOAA Fisheries, NEFSC<br> 2024-06-4"
+output:
+  xaringan::moon_reader:
+    self_contained: true
+    css: ["xaringan-themer_16_9.css", "slides-style_TMB201.css"]
+    lib_dir: libs
+    nature:
+      ratio: '16:9'
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+
+layout: true
+
+.footnote[U.S. Department of Commerce | National Oceanic and Atmospheric Administration | National Marine Fisheries Service]
+
+
+<style type="text/css">
+
+code.cpp{
+  font-size: 14px;
+}
+code.r{
+  font-size: 14px;
+}
+
+
+</style>
+
+```{css, echo=FALSE}
+pre {
+  max-height: 250px; /*changes height of chunk output box*/
+  max-width: 800px; /*changes width of chunk output box*/
+  overflow-y: auto; /* auto will add vertical scroll bar when necessary */
+}
+
+```
+```{r set-options, include = FALSE}
+options(width = 50)
+```
+
+```{r xaringan-tile-view, echo=FALSE}
+# this gives you a tile navigation if you type "O" at any time
+#xaringanExtra::use_tile_view()
+```
+
+---
+
+# Outline <br>
+
+* Using `set_NAA`
+* Using different options with WHAM example data:
+ * Different initial abundance models
+ * Different mean recruitment models
+ * Different NAA random effects models
+* Using `set_M`
+* Using different options with WHAM example data
+ * Different mean M models
+ * Different M random effects models
+* Using `set_q`
+* Using different options with WHAM example data
+ * Different q random effects models
+---
+
+# Abundance at age options
+The `NAA_re` argument to `prepare_wham_input` or `set_NAA` has these elements to configure selectivity.
+* `recruit_model`: whether to estimate recruitment as
+ * (1) annual fixed effects
+ * (2) a mean recruitment parameter and annual random effects,
+ * (3) a mean Beverton-Holt function of SSB and annual random effects
+ * (4) a mean Ricker function of SSB and annual random effects
+* `recruit_pars`: initial values to use for mean recruitment parameters.
+* `N1_model`: character vector specifying which of 4 options for the initial abundance at age
+ * `age-specific`: a different parameter for each age class
+ * `equilibrium`: 2 parameters: initial recruitment and a fully-selected F needed to calculate an equilibrium distribution of abundance at age.
+ * `iid-re`: Estimate a mean abundance with independent random effects for each age.
+ * `ar1-re`: Estimate a mean abundance with autocrrelated random effects for each age.
+* `N1_pars`: initial parameter values to use for the initial abundance at age.
+
+---
+
+# Abundance at age options
+* `sigma`: whether to estimate random effects on recruitment only or recruitment and survival from one time step to the next.
+* `recruit_pars`: initial values to use for mean recruitment parameters.
+* `N1_model`: character vector specifying which of 4 options for the initial abundance at age
+ * `age-specific`: a different parameter for each age class
+ * `equilibrium`: 2 parameters: initial recruitment and a fully-selected F needed to calculate an equilibrium distribution of abundance at age.
+ * `iid-re`: Estimate a mean abundance with independent random effects for each age.
+ * `ar1-re`: Estimate a mean abundance with autocrrelated random effects for each age.
+* `N1_pars`: initial parameter values to use for the initial abundance at age.
+
+---

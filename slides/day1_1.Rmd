@@ -1,0 +1,396 @@
+---
+title:  "Preparing a WHAM input"
+subtitle: ""
+author: "Tim Miller<br>NOAA Fisheries, NEFSC<br> 2024-06-3"
+output:
+  xaringan::moon_reader:
+    self_contained: true
+    css: ["xaringan-themer_16_9.css", "slides-style_TMB201.css"]
+    lib_dir: libs
+    nature:
+      ratio: '16:9'
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+
+layout: true
+
+.footnote[U.S. Department of Commerce | National Oceanic and Atmospheric Administration | National Marine Fisheries Service]
+
+
+<style type="text/css">
+
+code.cpp{
+  font-size: 14px;
+}
+code.r{
+  font-size: 14px;
+}
+
+
+</style>
+
+```{css, echo=FALSE}
+pre {
+  max-height: 250px; /*changes height of chunk output box*/
+  max-width: 800px; /*changes width of chunk output box*/
+  overflow-y: auto; /* auto will add vertical scroll bar when necessary */
+}
+
+```
+
+
+```{r setup, include=FALSE}
+#options(htmltools.dir.version = FALSE)
+#library(knitr)
+#knitr::opts_chunk$set(cache = TRUE)
+#knitr::opts_knit$set(root.dir = here::here())
+#knitr::opts_chunk$set(width = 1500)
+#library(kableExtra)
+#library(imager)
+#here::i_am("c:/work/BSB_RT")
+
+#library(here)
+
+```
+
+```{r set-options, include = FALSE}
+options(width = 50)
+```
+
+```{r xaringan-tile-view, echo=FALSE}
+# this gives you a tile navigation if you type "O" at any time
+#xaringanExtra::use_tile_view()
+```
+
+---
+# Outline <br>
+
+Creating an input for fitting a model with WHAM:
+* Using ASAP input
+* Without ASAP input
+* Modifying an existing WHAM input
+* Simple multiple-stock and regions
+---
+
+# Using ASAP Input <br>
+
+For illustration, we will use one of the ASAP3 dat files that comes with the WHAM package. 
+
+First, load the WHAM package. 
+This will find and load the wham package that is first in the search list of locations that R checks.
+```{r, eval = FALSE}
+library(wham)
+```
+```{r, include = FALSE, eval = TRUE}
+library("wham", lib.loc = "c:/work/wham/old_packages/lab")
+```
+
+When there are multiple versions of WHAM installed a particular version can be loaded. 
+
+For example, this will load a version of wham that is installed to the directory `c:/work/wham/old_packages/76093e0`
+```{r, eval = FALSE}
+library("wham", lib.loc = "c:/work/wham/old_packages/76093e0")
+```
+
+---
+
+# Using ASAP Input <br>
+
+Second, locate an ASAP3 dat file available in  the WHAM package and load the information from ASAP3 dat files into R using the `read_asap3_dat` function.
+
+```{r, eval = TRUE}
+path_to_examples <- system.file("extdata", package="wham")
+asap3 <- read_asap3_dat(file.path(path_to_examples,"ex2_SNEMAYT.dat"))
+```
+---
+
+# Using ASAP Input <br>
+
+Third, create a basic WHAM input using the `prepare_wham_input` function. 
+```{r, eval = TRUE}
+input <- prepare_wham_input(asap3) 
+```
+
+---
+
+# Using ASAP Input <br>
+
+Third, create a basic WHAM input using the `prepare_wham_input` function. 
+```{r, eval = FALSE}
+input <- prepare_wham_input(asap3) 
+```
+The input description can be printed at any time by
+```{r, eval = FALSE}
+cat(unlist(input$log))
+```
+
+With no other arguments specified to the function:
+* a basic statistical catch-at-age model will be configured. 
+ * No random effects
+ * Annual recruitment treated as fixed effects.
+ * Stock-recruit function is not allowed.
+* It will be specified to match the ASAP3 configuration as closely as possible.
+ * Same data, CV, effective sample size assumptions.
+ * Typically same assumptions for initial parameter values.
+ * BUT any ASAP3 penalties are ignored.
+
+---
+
+
+# Without ASAP Input
+
+First, we need to define all of the necessary data inputs for WHAM. We will use the same information as that in the `ex2_SENMAYT.dat` file and show that the results are the same whether we use the asap object directly or cobble the input together by hand.
+
+First the biological information:
+
+```{r, eval = TRUE}
+years <- as.integer(input$years)
+ages <- 1:input$data$n_ages
+waa <- input$data$waa
+mat <- input$data$mature
+Maa <- exp(matrix(c(input$par$Mpars), length(years), length(ages), byrow = TRUE) + c(input$par$M_re[1,1,,]))
+waa_pointer_indices <- input$data$waa_pointer_indices
+waa_pointer_fleets <- input$data$waa_pointer_fleets
+waa_pointer_ssb <- input$data$waa_pointer_ssb
+fracyr_ssb <-  input$data$fracyr_SSB
+```
+---
+
+# Without ASAP Input
+
+Next the catch information:
+```{r, eval = TRUE}
+catch <- input$data$agg_catch
+catch_cv <- cbind(sqrt(exp(input$data$agg_catch_sigma^2) - 1))
+catch_Neff <- cbind(input$data$catch_Neff)
+catch_paa <- input$data$catch_paa
+use_catch_paa <- input$data$use_catch_paa
+selblock_pointer_fleets <- input$data$selblock_pointer_fleets
+```
+
+Finally, the information for all indices:
+```{r, eval = TRUE}
+index <- input$data$agg_indices
+index_cv <- cbind(sqrt(exp(input$data$agg_index_sigma^2) - 1))
+index_Neff <- cbind(input$data$index_Neff)
+index_fracyr <- input$data$fracyr_indices
+units_indices <- input$data$units_indices
+units_index_paa <- input$data$units_index_paa
+use_indices <- input$data$use_indices
+use_index_paa <- input$data$use_index_paa
+index_paa <- input$data$index_paa
+selblock_pointer_indices <- input$data$selblock_pointer_indices
+```
+
+---
+
+
+# Without ASAP Input
+
+Now we are ready to build the necessary arguments required by `prepapre_wham_input`. 
+
+First is the `basic_info` argument which includes biological information. Note, we now provide information on the number of stocks, regions, and intervals, but default values are the same.
+```{r, eval = TRUE}
+basic_info <- list(
+  n_stocks = 1L,
+  ages = ages,
+  n_seasons = 1L,
+  n_fleets = 1L,
+  fracyr_SSB = fracyr_ssb,
+  maturity = mat,
+  years = years,
+  waa = waa,
+  waa_pointer_ssb = waa_pointer_ssb
+)
+
+```
+
+---
+
+# Without ASAP Input
+
+Second, the catch information:
+```{r, eval = TRUE}
+catch_info <- list(
+  n_fleets = NCOL(catch),
+  agg_catch = catch,
+  agg_catch_cv = catch_cv,
+  catch_paa = catch_paa,
+  use_catch_paa = use_catch_paa,
+  catch_Neff = catch_Neff,
+  selblock_pointer_fleets = selblock_pointer_fleets,
+  waa_pointer_fleets = waa_pointer_fleets
+)
+
+```
+---
+
+# Without ASAP Input
+
+Next, the information for the indices:
+```{r, eval = TRUE}
+index_info <- list(
+  n_indices = NCOL(index),
+  agg_indices = index,
+  units_indices = units_indices,
+  units_index_paa = units_index_paa,
+  agg_index_cv = index_cv,
+  fracyr_indices = index_fracyr,
+  use_indices = use_indices,
+  use_index_paa = use_index_paa,
+  index_paa = index_paa,
+  index_Neff = index_Neff,
+  selblock_pointer_indices = selblock_pointer_indices,
+  waa_pointer_indices = waa_pointer_indices
+)
+```
+---
+
+# Without ASAP Input
+
+The last two arguments to prepare_wham_input that we need are for natural mortality and selectivity. Natural mortality is separated from basic biology because there are many different ways to model natural mortality in WHAM.
+
+Natural mortality is not estimated. Assumed M changes with age for this stock, but is constant over time.
+```{r, eval = TRUE}
+M_in <- list(
+  initial_MAA = array(Maa, dim = c(1,1,length(basic_info$years), length(basic_info$ages)))
+)
+```
+
+Specify using logistic selectivity for all 6 selectivity blocks and initial values for a50 and inverse of slope. Fixing selectivity for the last two selectivity blocks.
+```{r, eval = TRUE}
+selectivity <- list(
+  model = rep("logistic",6), n_selblocks = 6,
+  fix_pars = list(NULL,NULL,NULL,NULL, 1:2, 1:2),
+  initial_pars = list(c(2,0.2),c(2,0.2),c(2,0.2),c(2,0.2),c(1.5,0.1),c(1.5,0.1))
+)
+```
+
+---
+
+# Creating WHAM inputs: 3 ways
+
+All at once
+```{r, eval = FALSE}
+input_all <- prepare_wham_input(basic_info = basic_info, selectivity = selectivity, catch_info = catch_info, index_info = index_info, M = M_in)
+```
+
+Build input sequentially
+```{r, eval = FALSE}
+input_seq <- prepare_wham_input(basic_info = basic_info)
+input_seq <- set_M(input_seq, M = M_in)
+input_seq <- set_catch(input_seq, catch_info = catch_info)
+input_seq <- set_F(input_seq)
+input_seq <- set_indices(input_seq, index_info = index_info)
+input_seq <- set_q(input_seq)
+input_seq <- set_selectivity(input_seq, selectivity = selectivity)
+```
+Using asap input
+```{r, eval = FALSE}
+input_asap <- prepare_wham_input(asap3) 
+```
+```{r, include = FALSE}
+input_all <- prepare_wham_input(basic_info = basic_info, selectivity = selectivity, catch_info = catch_info, index_info = index_info, M = M_in)
+input_seq <- prepare_wham_input(basic_info = basic_info)
+input_seq <- set_M(input_seq, M = M_in)
+input_seq <- set_catch(input_seq, catch_info = catch_info)
+input_seq <- set_F(input_seq)
+input_seq <- set_indices(input_seq, index_info = index_info)
+input_seq <- set_q(input_seq)
+input_seq <- set_selectivity(input_seq, selectivity = selectivity)
+input_asap <- prepare_wham_input(asap3) 
+```
+---
+
+# Inside the WHAM input
+
+The object returned by `prepare_wham_input` is a list of objects. 
+```{r, eval = TRUE}
+names(input_asap)
+```
+* Some elements are used by `TMB::MakeADFun`: data, par, map, random
+* Others provide information for generating output: years, years_full, ages.lab, index_names, fleet_names, etc. 
+* `log` is the list of text strings printed to the screen by `prepare_wham_input`
+* `options` are the lists provided for the various arguments to `prepare_wham_input` or the various `set_*` functions.
+* `call` saves the call expression to `prepare_wham_input`
+
+---
+
+# Compare unfit models
+
+
+```{r, eval = FALSE}
+nofit_all <- fit_wham(input_all, do.fit = FALSE)
+nofit_seq <- fit_wham(input_seq, do.fit = FALSE)
+nofit_asap <- fit_wham(input_asap, do.fit = FALSE)
+```
+
+```{r, include = FALSE}
+nofit_all <- fit_wham(input_all, do.fit = FALSE)
+nofit_seq <- fit_wham(input_seq, do.fit = FALSE)
+nofit_asap <- fit_wham(input_asap, do.fit = FALSE)
+```
+
+We can see that the negative log likelihood is the same whether we build the input all at once or sequentially. 
+```{r, eval = TRUE}
+nofit_all$fn() - nofit_seq$fn() #equal
+nofit_all$fn() - nofit_asap$fn() #different
+```
+---
+
+# Compare unfit models
+
+But building from the asap file provides a different value.
+
+The asap file includes different initial values for initial abuandance at age and catchability:
+```{r, eval = TRUE}
+nofit_asap$par-nofit_all$par
+```
+Evaluating from the same initial parameters give the same nll:
+```{r, eval = TRUE}
+nofit_asap$fn(nofit_all$par)-nofit_all$fn()
+```
+
+---
+
+# Compare fitted models
+
+And you can verify that the optimized models using each of the 3 inputs gives the same results.
+
+```{r, eval = FALSE}
+fit_seq <- fit_wham(input_seq, do.retro = FALSE, do.osa = FALSE, do.sdrep = FALSE)
+fit_all <- fit_wham(input_all, do.retro = FALSE, do.osa = FALSE, do.sdrep = FALSE)
+fit_asap <- fit_wham(input_asap, do.retro = FALSE, do.osa = FALSE, do.sdrep = FALSE)
+```
+```{r, include = FALSE}
+res_dir <- file.path(getwd(),"temp")
+fit_seq <- readRDS(file.path(res_dir,"fit_seq.RDS"))
+fit_all <- readRDS(file.path(res_dir,"fit_all.RDS"))
+fit_asap <- readRDS(file.path(res_dir,"fit_asap.RDS"))
+```
+
+```{r, eval = TRUE}
+fit_seq$opt$obj - fit_all$opt$obj # equal
+fit_asap$opt$obj - fit_all$opt$obj # equal
+```
+
+---
+
+#Multiple stocks
+
+A contrived example: Estimating the same model two times simultaneously.
+```{r, eval = FALSE}
+two_stocks_asap <- read_asap3_dat(file.path(path_to_examples,c("ex1_SNEMAYT.dat","ex1_SNEMAYT.dat")))
+ini_2_stocks <- prepare_wham_input(two_stocks_asap)
+fit_2_stocks <- fit_wham(ini_2_stocks, do.osa = FALSE, do.retro= FALSE, do.sdrep = FALSE)
+```
+```{r, include = FALSE}
+fit_2_stocks_RDS <- file.path(res_dir,"fit_2_stocks.RDS")
+fit_2_stocks <- readRDS(fit_2_stocks_RDS)
+```
+Model estimates are identical for the two stocks, as they should be.
+```{r, eval = TRUE, max.height='10px'}
+fit_2_stocks$rep$SSB
+```

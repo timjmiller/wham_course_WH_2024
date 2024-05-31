@@ -1,0 +1,183 @@
+---
+title:  "Tips on Installing WHAM"
+subtitle: ""
+author: "Tim Miller<br>NOAA Fisheries, NEFSC<br> 2024-06-3"
+output:
+  xaringan::moon_reader:
+    self_contained: true
+    css: ["xaringan-themer_16_9.css", "slides-style_TMB201.css"]
+    lib_dir: libs
+    nature:
+      ratio: '16:9'
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+
+layout: true
+
+.footnote[U.S. Department of Commerce | National Oceanic and Atmospheric Administration | National Marine Fisheries Service]
+
+
+<style type="text/css">
+
+code.cpp{
+  font-size: 14px;
+}
+code.r{
+  font-size: 14px;
+}
+
+
+</style>
+
+```{css, echo=FALSE}
+pre {
+  max-height: 400px;
+  max-width: 800px;
+  overflow-y: auto;
+}
+
+```
+
+
+```{r setup, include=FALSE}
+#options(htmltools.dir.version = FALSE)
+#library(knitr)
+#knitr::opts_chunk$set(cache = TRUE)
+#knitr::opts_knit$set(root.dir = here::here())
+#library(kableExtra)
+#library(imager)
+#here::i_am("c:/work/BSB_RT")
+
+#library(here)
+
+```
+
+```{r xaringan-tile-view, echo=FALSE}
+# this gives you a tile navigation if you type "O" at any time
+#xaringanExtra::use_tile_view()
+```
+
+---
+# Installation <br>
+
+Installing WHAM on Windows is much more difficult than Linux and Mac, but that is what we have to do.
+
+First an appropriate version of Rtools must be installed. 
+
+ITD must install this so file a help ticket!
+
+Once that Rtools is available, we need a package that will install non-standard packages from github. We can use the devtools R package:
+```{r, eval = FALSE}
+install.packages("devtools")
+```
+Also, a TeX package should be installed to allow output tables to be rendered without error. If one is not availble use the tinytex package:
+```{r, eval = FALSE}
+install.packages("tinytex")
+tinytex::install_tinytex()
+```
+
+---
+# Installation <br>
+
+Pandoc is another requirement that should be available with Rstudio. In an Rstudio console:
+```{r, eval = FALSE}
+rmarkdown::find_pandoc() 
+```
+Should give you a location for it. Something like
+
+`"C:/Program Files/RStudio/bin/quarto/bin/pandoc.exe"`
+
+If running R outside of Rstudio setting this might be necessary.
+```{r, eval = FALSE}
+Sys.setenv(RSTUDIO_PANDOC="C:/Program Files/RStudio/bin/quarto/bin/pandoc.exe")
+```
+
+
+---
+
+# Installation <br>
+
+Next, try to install WHAM. Using the main branch will install the latest release of WHAM, but the devel branch passes all tests and impliments new features that haven't been released yet.
+```{r, eval = FALSE}
+devtools::install_github("timjmiller/wham", dependencies=TRUE, ref = "devel", INSTALL_opts=c("--no-multiarch"))
+```
+By default R wants to install both 32 and 64 bit versions of the package, but it is very unlikely that anyone still uses a machine with 32 bit memory. 
+
+`INSTALL_opts=c("--no-multiarch")` only installs the 64 bit version and is likely necessary for th installation to actually complete.
+
+There will be many dependencies that must be installed including TMB. 
+
+Windows often has a hard time keeping packages unloaded that need to be installed or updated. So, it might help to install many of these before the WHAM installation.
+
+```{r, eval = FALSE}
+to.install <- c("plotrix","ellipse","Hmisc","gplots","fields","RColorBrewer","colorspace","mnormt","Deriv","tidyr","dplyr","ggplot2","viridis", "abind", "rmarkdown", "pander", "kableExtra")
+new.packages <- to.install[!(to.install %in% installed.packages()[,"Package"])]
+if(length(new.packages)) install.packages(new.packages)
+```
+
+
+---
+
+# Installation <br>
+
+The pak package seems to provide a much easier installation
+```{r, eval = FALSE}
+install.packages("pak")
+pak::pkg_install("timjmiller/wham@devel")
+```
+
+pak will automatically install dependencies
+
+---
+
+# Installation <br>
+
+Once the package has been successfully installed. Try running this code to make sure that the package is functioning properly.
+```{r, eval = FALSE}
+library(wham)
+path_to_examples <- system.file("extdata", package="wham")
+asap3 <- read_asap3_dat(file.path(path_to_examples,"ex2_SNEMAYT.dat"))
+input <- prepare_wham_input(asap3) 
+nofit <- fit_wham(input, do.fit = FALSE)
+plot_wham_output(nofit)
+```
+An html view should open in your default browser with "output" from this unfitted model.
+
+---
+
+# Installation of multiple versions
+
+When using WHAM for an actual assessment:
+* It can be useful to keep track of the version used for management.
+* When updating the assessment, a newer version might be used.
+* Being able to use the previous version can be helpful for reproducability.
+* If there are differences in model results, we want to know why.
+* Knowing the differences all of the management versions can help understand this.
+
+---
+
+# Installation of multiple versions
+
+After the initial package has been installed, Installing alternative versions is easier. 
+
+A fitted model should have information on the version and commit of WHAM that was used.
+
+If we wanted to have both the main and devel branches available, we could install the devel branch to a special location. Suppose a "devel" directory exists `c:/work/wham/other_versions/devel` and load that library. 
+
+```{r, eval = FALSE}
+pak::pkg_install("timjmiller/wham@devel", lib = "c:/work/wham/other_versions/devel")
+library("wham", lib.loc = "c:/work/wham/other_versions/devel")
+```
+
+One can even install a specific commit: 
+
+```{r, eval = FALSE}
+pak::pkg_install("timjmiller/wham@76093e0", lib = "c:/work/wham/old_packages/76093e0")
+library("wham", lib.loc = "c:/work/wham/old_packages/76093e0")
+```
+
+NOTE: It is best to try to keep a single version loaded in a particular R session. In particular, make_osa_residuals will get confused when multiple wham libraries are loaded when trying to do things in parallel.
+
+

@@ -1,0 +1,102 @@
+---
+title:  "Environmental Covariates in WHAM"
+subtitle: ""
+author: "Tim Miller<br>NOAA Fisheries, NEFSC<br> 2024-06-4"
+output:
+  xaringan::moon_reader:
+    self_contained: true
+    css: ["xaringan-themer_16_9.css", "slides-style_TMB201.css"]
+    lib_dir: libs
+    nature:
+      ratio: '16:9'
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+
+layout: true
+
+.footnote[U.S. Department of Commerce | National Oceanic and Atmospheric Administration | National Marine Fisheries Service]
+
+
+<style type="text/css">
+
+code.cpp{
+  font-size: 14px;
+}
+code.r{
+  font-size: 14px;
+}
+
+
+</style>
+
+```{css, echo=FALSE}
+pre {
+  max-height: 250px; /*changes height of chunk output box*/
+  max-width: 800px; /*changes width of chunk output box*/
+  overflow-y: auto; /* auto will add vertical scroll bar when necessary */
+}
+
+```
+```{r set-options, include = FALSE}
+options(width = 50)
+```
+
+```{r xaringan-tile-view, echo=FALSE}
+# this gives you a tile navigation if you type "O" at any time
+#xaringanExtra::use_tile_view()
+```
+
+---
+
+# Outline <br>
+
+* Using `set_ecov`
+* Using different options with WHAM example data:
+ * Different options for observations
+ * Different options for process error random effects
+ * Effects on different model parameters
+  * Recruitment
+  * M
+  * catchability
+
+---
+
+# Environmental covariate effects
+
+The `ecov` argument to `prepare_wham_input` or `set_ecov` has these elements to configure environmental effects on the population.
+* `label`: names for covariates
+* `mean`: matrix of covariate observations (n_years x n_covariates)
+* `logsigma`: configuration of covariate observation error:
+ * 1) matrix of the log(sd) for each covariate observations (n_years x n_covariates)
+ * 2) vector of single constant observation log(sd) for each covariate
+ * 3) `est_1`: Estimate a constant observation sd for each covariate
+ * 4) `est_re`: Estimate a normally distributed random effect (mean and sd) for the log(sd) for each covariate
+ * 5) a list with two elements where the first is 1 or 2 and the second is 3 or 4.
+* `year`: years corresponding to the rows of `mean`
+* `use_obs`: T/F (matrix) on whether to use the observations for each covariate.
+* `process_model`: `rw` (random walk), `ar1`, or `NA` (do not fit)
+* `process_mean_vals`,`process_sig_vals`,`process_cor_vals`: intial values for process distribution parameters
+
+---
+
+# Environmental covariate effects
+
+* `recruitment_how`: character strings ("type-lag-order") configuring the effect type for each covariate on recruitment
+ * type: 'none': no effect (but still estimate the state-space model for the covariate and observation)
+ * type: `controlling`,`limiting`,`lethal`,`masking`,`directive` different effects on S-R function
+ * lag: `lag-0`, `lag-1`,...
+ * order: `linear` = `poly-1`, `poly-2`,... 
+ * e.g.: "limiting-lag-1-poly-2" would model the covariate would have a limiting affecting recruitment the next year (lag = 1) as a second order orthogonal polynomial ($b_0 + b_1*ecov + b_2*ecov^2$)
+* `M_how`: character strings ("lag-order") for effect on natural mortality
+* `M_effect_map`: integer array indicating which estimated effects are common by age,stock,region
+* `q_how`: character strings ("lag-order") for effect on catchability
+* `move_how`: character strings ("lag-order") for effect on movement
+* `move_effect_map`: integer array indicating which estimated effects are common by age,stock,region,season
+* `beta_R_vals`,`beta_M_vals`,`beta_q_vals`,`beta_mu_vals`: initial effect sizes
+
+---
+
+
+---
