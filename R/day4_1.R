@@ -12,6 +12,10 @@ fit_0 from day 2 session 2 has a hig selpar
 sort(mod$opt$par)
 mod$parList
 
+# age comp and index cv inputs needs to be 
+Dirichlet multinomial input Neff should be an upper bound
+Index CVs from ASAP3 file are often adjusted from the CVs from the bottom trawl surveys 
+
 
 
 # internal calculation of reference points needs a different intial value
