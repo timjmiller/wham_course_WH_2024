@@ -1,7 +1,7 @@
 ---
 title:  "Debugging model fitting and other cautionary tales"
 subtitle: ""
-author: "Tim Miller<br>NOAA Fisheries, NEFSC<br> 2024-06-6"
+author: "Tim Miller<br>NOAA Fisheries, NEFSC<br> 2024-06-06"
 output:
   xaringan::moon_reader:
     self_contained: true

@@ -1,7 +1,7 @@
 ---
 title:  "Preparing a WHAM input"
 subtitle: ""
-author: "Tim Miller<br>NOAA Fisheries, NEFSC<br> 2024-06-3"
+author: "Tim Miller<br>NOAA Fisheries, NEFSC<br> 2024-06-03"
 output:
   xaringan::moon_reader:
     self_contained: true
@@ -365,7 +365,7 @@ fit_all <- fit_wham(input_all, do.retro = FALSE, do.osa = FALSE, do.sdrep = FALS
 fit_asap <- fit_wham(input_asap, do.retro = FALSE, do.osa = FALSE, do.sdrep = FALSE)
 ```
 ```{r, include = FALSE}
-res_dir <- file.path(getwd(),"temp")
+res_dir <- file.path("../temp")
 fit_seq <- readRDS(file.path(res_dir,"fit_seq.RDS"))
 fit_all <- readRDS(file.path(res_dir,"fit_all.RDS"))
 fit_asap <- readRDS(file.path(res_dir,"fit_asap.RDS"))

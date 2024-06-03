@@ -1,7 +1,7 @@
 ---
-title:  "Environmental Covariates in WHAM"
+title:  "Environmental Covariates"
 subtitle: ""
-author: "Tim Miller<br>NOAA Fisheries, NEFSC<br> 2024-06-4"
+author: "Tim Miller<br>NOAA Fisheries, NEFSC<br> 2024-06-05"
 output:
   xaringan::moon_reader:
     self_contained: true
@@ -472,6 +472,8 @@ fit_5$peels <- retro(fit_5)
 fit_5 <- make_osa_residuals(fit_5)
 plot_wham_output(fit_5, dir.main = tmp.dir)
 ```
+
+---
 
 # Fitting efects on catchability
 

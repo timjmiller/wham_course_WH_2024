@@ -1,7 +1,7 @@
 ---
 title:  "Reference points and Projections"
 subtitle: ""
-author: "Tim Miller<br>NOAA Fisheries, NEFSC<br> 2024-06-4"
+author: "Tim Miller<br>NOAA Fisheries, NEFSC<br> 2024-06-06"
 output:
   xaringan::moon_reader:
     self_contained: true
@@ -59,30 +59,90 @@ options(width = 50)
 ---
 
 # Reference point options
+
+Configuring reference point calculations and projections is probably the most complicated and messy part of WHAM
+* WHAM calculates reference points both 
+    * annually (in model and projection years) 
+    * under prevailing conditions (`static` in the names of the reported output)
+* Annual SPR- and MSY-based reference points use annual inputs to SSB and yield per recruit calculations, but there are different options to treat recruitment in different ways for SSB and yield at SPR-based F (e.g., F40).
+* For prevailing reference points, the user can specify which year(s) to average over for inputs to SSB/R and Y/R and how recruitment is treated.
+
+---
+
+# Reference point options
+
 The `basic_info` argument to `prepare_wham_input` has these elements to configure SPR-based reference points.
-* `recruit_model`: whether to estimate recruitment as
- * (1) annual fixed effects
- * (2) a mean recruitment parameter and annual random effects,
- * (3) a mean Beverton-Holt function of SSB and annual random effects
- * (4) a mean Ricker function of SSB and annual random effects
-* `recruit_pars`: initial values to use for mean recruitment parameters.
-* `N1_model`: character vector specifying which of 4 options for the initial abundance at age
- * `age-specific`: a different parameter for each age class
- * `equilibrium`: 2 parameters: initial recruitment and a fully-selected F needed to calculate an equilibrium distribution of abundance at age.
- * `iid-re`: Estimate a mean abundance with independent random effects for each age.
- * `ar1-re`: Estimate a mean abundance with autocrrelated random effects for each age.
-* `N1_pars`: initial parameter values to use for the initial abundance at age.
+* `basic_info$percentSPR`: percentage (0-100) of unfished SSB/R to use for SPR-based reference points (0-100)
+* `basic_info$XSPR_input_average_years`: which years to average inputs to per recruit calculation (selectivity, M, WAA, maturity) for prevailing MSY- and SPR-based reference points. Default is last 5 years.
+* `basic_info$XSPR_R_avg_yrs`: which years to average annual recruitments for SSB and Yield at SPR-based F. Default is all data years.
+* `basic_info$XSPR_R_opt`: whether to use annual estimated or expected recruitments. 
+    * Expected recruitment is constant over years without SR model
+---
+
+# Reference point examples
+```{r, include = FALSE}
+library("wham", lib.loc = "c:/work/wham/old_packages/lab")
+```
+Fit a model
+
+```{r}
+```
 
 ---
 
-# Abundance at age options
-* `sigma`: whether to estimate random effects on recruitment only or recruitment and survival from one time step to the next.
-* `recruit_pars`: initial values to use for mean recruitment parameters.
-* `N1_model`: character vector specifying which of 4 options for the initial abundance at age
- * `age-specific`: a different parameter for each age class
- * `equilibrium`: 2 parameters: initial recruitment and a fully-selected F needed to calculate an equilibrium distribution of abundance at age.
- * `iid-re`: Estimate a mean abundance with independent random effects for each age.
- * `ar1-re`: Estimate a mean abundance with autocrrelated random effects for each age.
-* `N1_pars`: initial parameter values to use for the initial abundance at age.
+# Projection options
+
+Relevant arguments to `basic_info`
+* `basic_info$XSPR_input_average_years`: is used for both prevailing FXSPR and FMSY and that which is used in projections.
+
+`proj.opts` argument to `project_wham` and `prepare_projection`
+* `$n.yrs`: number of projection years
+* `$use.FXSPR`: whether to use prevailing SPR-based F
+* `$use.FMSY`: whether to use prevailing FMSY (when possible)
+* `$percentFXSPR`: same as `basic_info` and redefines it.
+* `$percentFMSY`: same as `basic_info` and redefines it.
+* `$use.last.F`: whether to use terminal F estimate (and uncertainty)
+* `$use.avg.F`: whether to use average of annual F estimates (years defined by `avg.yrs`)
+* `$avg.yrs` (vector) specify which years to average over for calculating reference points or average F. Default = last 5 model years.
+    * Will redefine anything defined in `prepare_wham_input`
+* `$avg.rec.yrs`: specify which years to calculate the mean and sd for the normal distribution of log-recruitment in projections. Default = all model years. Only used when recruitment is estimated as fixed effects (SCAA).
 
 ---
+
+# Projection options
+
+`proj.opts` argument to `project_wham` and `prepare_projection` (continued)
+
+* `$proj_mature` user-supplied maturity for the projection years. Overrides averaging over years
+* `$proj_waa`} user-supplied weight-at-age for the projection years. Overrides averaging over years
+* `$proj_R_opt`: (integer)
+    * 1: continue any RE processes for recruitment, 
+    * 2: make projected recruitment consistent with average recruitment in SPR reference points and cancel any bias correction for NAA in projection years.
+* `$proj.F` (vector) user-specified annual Fs to use in projections 
+* `$proj.catch` (vector), user-specified annual catches to use in projections (wham determines F internally)
+* `$proj_F_opt`: Overrides any of the above specifications. (vector), integers specifying how to configure each year of the projection: 
+    * 1: use terminal F
+    * 2: use average F
+    * 3: use SPR-based F
+    * 4: use specified F
+    * 5: use specified catch 
+    * 6: use Fmsy
+* `$proj_Fcatch`: (vector), catch or F values to use each projection year. Overrides any specifications of `proj.F` or `proj.catch`.
+
+---
+
+# Projection options
+
+`proj.opts` argument to `project_wham` and `prepare_projection` (continued)
+
+* `$cont.ecov` whether to continue environmental covariate process for projections. Default = TRUE.
+* `$use.last.ecov` whether to use terminal year ecov for projections.
+* `$cont.M.re`: whether to continue M random effects for projections. Default = FALSE.
+* `$cont.move.re`: whether to continue any movement random effects for projections. Default = FALSE.
+
+# Projection examples
+
+project off of model m_2
+
+```{r}
+```

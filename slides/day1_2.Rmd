@@ -1,7 +1,7 @@
 ---
 title:  "Fitting a model with WHAM and exploring results"
 subtitle: ""
-author: "Tim Miller<br>NOAA Fisheries, NEFSC<br> 2024-06-3"
+author: "Tim Miller<br>NOAA Fisheries, NEFSC<br> 2024-06-03"
 output:
   xaringan::moon_reader:
     self_contained: true

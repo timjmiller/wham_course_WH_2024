@@ -3,7 +3,7 @@
   <head>
     <title>Tools for comparing models and their performance</title>
     <meta charset="utf-8" />
-    <meta name="author" content="Tim Miller NOAA Fisheries, NEFSC  2024-06-4" />
+    <meta name="author" content="Tim Miller NOAA Fisheries, NEFSC  2024-06-05" />
     <script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
 // be compatible with the behavior of Pandoc < 2.8).
 document.addEventListener('DOMContentLoaded', function(e) {
@@ -98,7 +98,7 @@ class: center, middle, inverse, title-slide
 # Tools for comparing models and their performance
 ]
 .author[
-### Tim Miller<br>NOAA Fisheries, NEFSC<br> 2024-06-4
+### Tim Miller<br>NOAA Fisheries, NEFSC<br> 2024-06-05
 ]
 
 ---
@@ -170,6 +170,7 @@ First let&#39;s add more results to a few fits from yesterday, then compare them
 
 
 ```r
+library(wham)
 fit_4 &lt;- readRDS(file.path(&quot;temp&quot;, &quot;day_2_2_fit_4.RDS&quot;))
 fit_5 &lt;- readRDS(file.path(&quot;temp&quot;, &quot;day_2_2_fit_5.RDS&quot;))
 fit_6 &lt;- readRDS(file.path(&quot;temp&quot;, &quot;day_2_2_fit_6.RDS&quot;))
