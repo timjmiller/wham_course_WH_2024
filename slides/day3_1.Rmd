@@ -57,7 +57,7 @@ options(width = 50)
  * Retros
  * Residuals OSA and otherwise
  * joint likelihood components
-* Using `jitter` (beta)
+* Using `jitter_wham` (beta)
 * Using `self_test` (beta)
 
 ---
@@ -222,7 +222,7 @@ knitr::include_graphics("day_3_1_fit_4_SSB_retro_rel.png")
 
 ---
 
-# `jitter` (Beta)
+# `jitter_wham` (Beta)
 
 This function will take a fitted model and refit the model a number of times with alternative starting values
 The arguments to this function are:
@@ -237,14 +237,14 @@ The arguments to this function are:
 
 ---
 
-# `jitter` (Beta)
+# `jitter_wham` (Beta)
 
-Here we use the `jitter` function to create the default number of initial parameter vectors and refit the model for each
+Here we use the `jitter_wham` function to create the default number of initial parameter vectors and refit the model for each
 
 .pull-left[
-The fitted model is saved as an RDS prior to calling `jitter`.
+The fitted model is saved as an RDS prior to calling `jitter_wham`.
 ```{r, eval = FALSE}
-jitter_res <- jitter(fit_RDS = file.path("temp", "day_3_1_fit_6.RDS"), 
+jitter_res <- jitter_wham(fit_RDS = file.path("temp", "day_3_1_fit_6.RDS"), 
   n_jitter = 10, res_dir = "temp", do_parallel = FALSE)
 
 fit_6 <- readRDS(file.path("temp", "day_3_1_fit_6.RDS"))

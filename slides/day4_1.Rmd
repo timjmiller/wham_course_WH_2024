@@ -179,7 +179,7 @@ When a fit doesn't converge
     * 1) the data cannot reliably estimate the assumed level of complexity
         * Including too many sources of process error can result in variance parameter estimation going to zero which will result in poor convergence.
     * 2) the starting values have not led to the global minimum
-        * using `jitter` with user-supplied starting values might improve success
+        * using `jitter_wham` with user-supplied starting values might improve success
         * using MLEs from a simpler model can also help
 * running `check_convergence` may help determine which parameter is problematic
     * it is often selectivity and/or initial NAA parameters!

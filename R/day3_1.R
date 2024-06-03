@@ -61,10 +61,10 @@ file.copy(file.path(tmp.dir, "plots_png", "retro", "stock_1_SSB_retro_relative.p
 
 # Use different age composition and selectivity assumptions to demonstrates OSA residuals
 
-# Use jitter function
+# Use jitter_wham function
 
-# jitter_res <- jitter(fit_RDS = file.path("temp", "day_3_1_fit_6.RDS"), n_jitter = 10, res_dir = "temp", do_parallel = TRUE, wham_location = "c:/work/wham/old_packages/lab")
-jitter_res <- jitter(fit_RDS = file.path("temp", "day_3_1_fit_6.RDS"), n_jitter = 10, res_dir = "temp", do_parallel = FALSE, wham_location = "c:/work/wham/old_packages/lab")
+# jitter_res <- jitter_wham(fit_RDS = file.path("temp", "day_3_1_fit_6.RDS"), n_jitter = 10, res_dir = "temp", do_parallel = TRUE, wham_location = "c:/work/wham/old_packages/lab")
+jitter_res <- jitter_wham(fit_RDS = file.path("temp", "day_3_1_fit_6.RDS"), n_jitter = 10, res_dir = "temp", do_parallel = FALSE, wham_location = "c:/work/wham/old_packages/lab")
 # saveRDS(jitter_res, file.path("temp", "day_3_1_jitter_res.RDS"))
 
 plot(1:10, sapply(x[[1]], function(x) x$obj) - fit_6$opt$obj, xlab = "Jitter #", ylab = "NLL Difference")
