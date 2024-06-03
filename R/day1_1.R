@@ -149,7 +149,7 @@ plot_wham_output(fit_asap, dir.main = tmp.dir)
 fit_RDS <- file.path(res_dir,"fit.RDS")
 saveRDS(fit_asap, fit_RDS)
 
-x <- jitter_fn(fit_RDS = fit_RDS, n_jitter = 10, res_dir = res_dir)
+x <- jitter(fit_RDS = fit_RDS, n_jitter = 10, res_dir = res_dir)
 
 two_stocks_asap <- read_asap3_dat(file.path(path_to_examples,c("ex1_SNEMAYT.dat","ex1_SNEMAYT.dat")))
 ini_2_stocks <- prepare_wham_input(two_stocks_asap)
