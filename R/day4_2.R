@@ -29,15 +29,13 @@ env <- list(
   process_model = "ar1", # fit CPI as AR1 process
   recruitment_how = matrix("limiting-lag-1-linear")) # limiting (carrying capacity), CPI in year t affects recruitment in year t+1
 
-temp <- prepare_wham_input(asap3)
 basic_info <- list(
-  XSPR_R_avg_yrs = tail(1:length(temp$years), 10),
+  XSPR_R_avg_yrs = tail(1:asap3[[1]]$dat$n_years, 10),
   percentSPR = 50,
   XSPR_input_average_years = tail(1:length(temp$years), 10),
   XSPR_R_opt = 1 # use annual R estimates for annual SSB_XSPR
 )
 input_1 <- prepare_wham_input(asap3, recruit_model = 3,
-  model_name = "Ex 3: Projections",
   ecov = env,
   NAA_re = list(sigma="rec+1", cor="iid"),
   age_comp = "logistic-normal-pool0", basic_info = basic_info) # logistic normal pool 0 obs
@@ -52,12 +50,21 @@ input_1$data$XSPR_R_opt
 
 mod_1 <- fit_wham(input_1, do.sdrep = FALSE, do.osa = FALSE, do.retro = FALSE) 
 mod_1$rep$R_XSPR
-temp <- input_1
-temp$par <- mod_1$parList
-mod_1 <- fit_wham(temp, do.fit = FALSE)
+
+# temp <- input_1
+# temp$par <- mod_1$parList
+# mod_1 <- fit_wham(temp, do.fit = FALSE)
 saveRDS(mod_1, file.path("temp", "day_4_2_mod_1.RDS"))
 
+cbind(mod_1$rep$NAA[1,1,,1], mod_1$rep$R_XSPR)
 cbind(exp(mod_1$rep$log_SSB_FXSPR[,1]), mod_1$rep$NAA[1,1,,1]*exp(mod_1$rep$log_SPR_FXSPR[,1]))
+
+exp(mod_1$rep$log_SSB_FXSPR_static[1])
+exp(mod_1$rep$log_SSB_FXSPR_static[1])/exp(mod_1$rep$log_SPR_FXSPR_static[1])
+mean(mod_1$rep$R_XSPR[tail(1:input_1$data$n_years_model,10),1])
+mod_1$rep$R_XSPR[input_1$data$n_years_model,1]
+
+mod_1$rep$R_XSPR[input_1$data$n_years_model,1]*exp(mod_1$rep$log_SPR_FXSPR_static[1])
 
 input_2 <- input_1
 input_2$par <- mod_1$parList

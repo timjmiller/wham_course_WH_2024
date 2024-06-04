@@ -338,7 +338,7 @@ The `M` argument to `prepare_wham_input` or `set_M` has these elements to config
 * `mean_model`: configuration options for mean/constant natural mortality
  * `fixed-M`: use initial values from asap or included in other elements of `M`
  * `estimate-M`: estimate mean/constant parameters
- * `weight-at-age`: estimate M as an alometric function of weight, $M_{y,a} = a W_{y,a}^b$
+ * `weight-at-age`: estimate M as an allometric function of weight, $M_{y,a} = a W_{y,a}^b$
 * `initial_means`: initial values to use for mean/constant natural mortality.
 * `means_map`: to fix or estimate `initial_means` parameters uniquely or commonly
 * `initial_MAA`: initial $M$ at age and year as a time-varying alternative to `initial_means`
@@ -455,7 +455,7 @@ plot_wham_output(fit_15, dir.main = tmp.dir)
 ]
 .pull-right[
 ```{r, echo = FALSE, out.width="100%", fig.align="center"}
-knitr::include_graphics("day_2_2_fit_16_M.png")
+knitr::include_graphics("day_2_2_fit_15_M.png")
 ```
 ]
 
@@ -489,7 +489,7 @@ knitr::include_graphics("day_2_2_fit_16_M.png")
 
 .pull-left[
 However, if we force random effect to be independent, scale is OK, but there are some identifiablity issues
-```{r, eval = FALSE}s
+```{r, eval = FALSE}
 M <- list(
   initial_means = array(0.2, dim = c(1,1,6)), 
   means_map = array(NA, dim = c(1,1,6)),

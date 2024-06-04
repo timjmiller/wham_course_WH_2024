@@ -82,10 +82,150 @@ The `basic_info` argument to `prepare_wham_input` has these elements to configur
 # Reference point examples
 ```{r, include = FALSE}
 library("wham", lib.loc = "c:/work/wham/old_packages/lab")
+path_to_examples <- system.file("extdata", package="wham")
+asap3 <- read_asap3_dat(file.path(path_to_examples,"ex2_SNEMAYT.dat"))
+env.dat <- read.csv(file.path(path_to_examples, "CPI.csv"), header=T)
 ```
-Fit a model
+
+Here we will set up alternative reference point configurations for an otherise identical model
+
+First, read in the SNEMA yellowtail data and the Cold Pool Index.
+```{r, eval = FALSE}
+library("wham")
+path_to_examples <- system.file("extdata", package="wham")
+asap3 <- read_asap3_dat(file.path(path_to_examples,"ex2_SNEMAYT.dat"))
+env.dat <- read.csv(file.path(path_to_examples, "CPI.csv"), header=T)
+```
+
+We specify an AR1 process for the CPI and limiting effects on the Beverton-Holt stock-recruit function.
+```{r}
+env <- list(
+  label = "CPI",
+  mean = as.matrix(env.dat$CPI), # CPI observations
+  logsigma = as.matrix(log(env.dat$CPI_sigma)), # CPI standard error is given/fixed as data
+  year = env.dat$Year,
+  use_obs = matrix(1, ncol=1, nrow=dim(env.dat)[1]), # use all obs (=1)
+  process_model = "ar1", # fit CPI as AR1 process
+  recruitment_how = matrix("limiting-lag-1-linear")) # limiting (carrying capacity), CPI in year t affects recruitment in year t+1
+```
+---
+
+# Reference point examples
+
+The first reference point configuration assumes
+* SPR-based reference points for 50% of unfished SSB/R
+* Annual recruitment rather than expected recruitment is used for the average
 
 ```{r}
+basic_info <- list(
+  XSPR_R_avg_yrs = tail(1:asap3[[1]]$dat$n_years, 10),
+  percentSPR = 50,
+  XSPR_input_average_years = tail(1:asap3[[1]]$dat$n_years, 10),
+  XSPR_R_opt = 1 # use annual R estimates for annual SSB_XSPR
+)
+```
+---
+
+# Reference point examples
+
+Create the model (random effects on R and survival)
+```{r, include = FALSE}
+input_1 <- prepare_wham_input(asap3, recruit_model = 3,
+  ecov = env,
+  NAA_re = list(sigma="rec+1", cor="iid"),
+  age_comp = "logistic-normal-pool0", basic_info = basic_info) 
+input_1$par$logit_selpars[1:4,7:8] <- 0 
+```
+```{r, eval = FALSE}
+input_1 <- prepare_wham_input(asap3, recruit_model = 3,
+  ecov = env,
+  NAA_re = list(sigma="rec+1", cor="iid"),
+  age_comp = "logistic-normal-pool0", basic_info = basic_info) 
+input_1$par$logit_selpars[1:4,7:8] <- 0 
+```
+```{r}
+input_1$data$percentSPR
+input_1$data$avg_years_ind
+input_1$data$XSPR_R_avg_yrs
+tail(1:length(input_1$years),10)-1 #C++ starts at 0
+input_1$data$XSPR_R_opt
+```
+---
+
+# Reference point examples
+
+Fit the model
+```{r, eval = FALSE}
+mod_1 <- fit_wham(input_1, do.sdrep = FALSE, do.osa = FALSE, do.retro = FALSE) 
+```
+```{r, include = FALSE}
+mod_1 <- readRDS(file.path("../temp", "day_4_2_mod_1.RDS"))
+```
+The annual recruitments are used for annual BRPs
+```{r}
+cbind(mod_1$rep$R_XSPR, mod_1$rep$NAA[1,1,,1])
+```
+---
+
+# Reference point examples
+
+The annual BRPs are the product of the recruitments and the annual SSB/R or Y/R
+```{r}
+cbind(exp(mod_1$rep$log_SSB_FXSPR[,1]), mod_1$rep$NAA[1,1,,1]*exp(mod_1$rep$log_SPR_FXSPR[,1]))
+```
+---
+
+# Reference point examples
+
+What about prevailing BRPs?
+
+* SSB/R and Y/R uses weight-at-age, maturity, M, selectivity is averaged over last 10 years for the prevailing conditions BRPs
+* supposed to use mean recruitment for the last 10 years
+
+```{r}
+basic_info <- list(
+  XSPR_R_avg_yrs = tail(1:asap3[[1]]$dat$n_years, 10),
+  percentSPR = 50,
+  XSPR_input_average_years = tail(1:asap3[[1]]$dat$n_years, 10),
+  XSPR_R_opt = 1 # use annual R estimates for annual SSB_XSPR
+)
+```
+
+---
+
+# Reference point examples
+
+The prevailing BRP:
+```{r}
+exp(mod_1$rep$log_SSB_FXSPR_static[1])
+```
+Uses this for recruitment: SSB / (SSB/R) = R
+```{r}
+exp(mod_1$rep$log_SSB_FXSPR_static[1])/exp(mod_1$rep$log_SPR_FXSPR_static[1])
+```
+But the average recruitment is this
+```{r}
+mean(mod_1$rep$R_XSPR[tail(1:input_1$data$n_years_model,10),1])
+```
+Turns out, the prevailing BRP currrently just uses the last value
+```{r}
+mod_1$rep$R_XSPR[input_1$data$n_years_model,1]
+```
+---
+
+# Reference point examples
+
+The second reference point configuration assumes just changes `XSPR_R_opt`
+* SPR-based reference points for 50% of unfished SSB/R
+* SSB/R and Y/R uses weight-at-age, maturity, M, selectivity is averaged over last 10 years for the prevailing conditions BRPs
+* mean recruitment for the last 10 years is used for prevailing BRPs 
+* mean of annual recruitment for last 10 years is used for annual BRPs
+
+```{r, eval = FALSE}
+input_2 <- input_1
+input_2$par <- mod_1$parList
+input_2$data$XSPR_R_opt = 2 
+mod_2 <- fit_wham(input_2, do.fit = FALSE)
 ```
 
 ---
@@ -140,9 +280,30 @@ Relevant arguments to `basic_info`
 * `$cont.M.re`: whether to continue M random effects for projections. Default = FALSE.
 * `$cont.move.re`: whether to continue any movement random effects for projections. Default = FALSE.
 
+---
+
 # Projection examples
 
-project off of model m_2
+First, do fit for mod_2 with sdreport
 
-```{r}
+```{r, eval = FALSE}
+mod_2 <- fit_wham(input_2, do.retro = FALSE, do.osa = FALSE)
+```
+
+Now we do various projections off of this model.
+First, just define the different projection options
+
+The first projection uses all the default settings:
+* 3 projection years
+* use terminal year F
+* continue the AR1 process for the environmental covariate
+
+```{r, eval = FALSE}
+proj_opts <- list()
+
+# default settings: 3 years, use last F, continue ecov
+proj_opts[[1]] <-list(n.yrs=3, use.last.F=TRUE, use.avg.F=FALSE,
+              use.FXSPR=FALSE, proj.F=NULL, proj.catch=NULL, avg.yrs=NULL,
+              cont.ecov=TRUE, use.last.ecov=FALSE, avg.ecov.yrs=NULL, proj.ecov=NULL)
+
 ```
