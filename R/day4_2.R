@@ -32,7 +32,7 @@ env <- list(
 basic_info <- list(
   XSPR_R_avg_yrs = tail(1:asap3[[1]]$dat$n_years, 10),
   percentSPR = 50,
-  XSPR_input_average_years = tail(1:length(temp$years), 10),
+  XSPR_input_average_years = tail(1:asap3[[1]]$dat$n_years, 10),
   XSPR_R_opt = 1 # use annual R estimates for annual SSB_XSPR
 )
 input_1 <- prepare_wham_input(asap3, recruit_model = 3,
@@ -74,7 +74,6 @@ mod_2 <- fit_wham(input_2, do.fit = FALSE)
 saveRDS(mod_2, file.path("temp", "day_4_2_mod_2.RDS"))
 
 mod_2$rep$R_XSPR
-input_2$data$
 mean(mod_2$rep$NAA[1,1,input_1$data$XSPR_R_avg_yrs+1,1])
 
 cbind(exp(mod_2$rep$log_SSB_FXSPR[,1]), mean(mod_2$rep$NAA[1,1,tail(1:length(temp$years), 10),1])*exp(mod_2$rep$log_SPR_FXSPR[,1]))
@@ -90,6 +89,8 @@ input_4 <- input_2
 input_4$data$XSPR_R_opt = 4 # use average expected R estimates for annual SSB_XSPR
 mod_4 <- fit_wham(input_4, do.fit = FALSE)
 saveRDS(mod_4, file.path("temp", "day_4_2_mod_4.RDS"))
+
+cbind(mod_4$rep$R_XSPR, mod_4$rep$pred_NAA[1,1,,1])
 
 mod_4$rep$R_XSPR
 mean(mod_4$rep$pred_NAA[1,1,input_4$data$XSPR_R_avg_yrs+1,1])
