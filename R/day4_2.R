@@ -49,6 +49,11 @@ input_1$data$XSPR_R_opt
 
 
 mod_1 <- fit_wham(input_1, do.sdrep = FALSE, do.osa = FALSE, do.retro = FALSE) 
+temp <- retro(mod_1, use.mle = TRUE)
+temp2 <- retro(mod_1, use.mle = FALSE)
+
+
+
 mod_1$rep$R_XSPR
 
 # temp <- input_1

@@ -1,5 +1,5 @@
 ---
-title:  "Review and Next Steps"
+title:  "Review and Going Forward"
 subtitle: ""
 author: "Tim Miller<br>NOAA Fisheries, NEFSC<br> 2024-06-07"
 output:
@@ -59,36 +59,80 @@ options(width = 50)
 ---
 
 # Getting data into WHAM
+
+* Most people are using ASAP files
+* Learned how to create input without ASAP files
+    * Good for future without ASAP
+* Can adjust existing inputs using `set_*` functions
+
+# Configuring selectivity
+
+* Mean selectivity models
+* Random effects are on the mean model parameters (not necessarily on ages)
+* Can be used to model FAA varying over time like SAM
+
 ---
 
 # Configuring recruitment and abundance at age
----
 
-# Configuring selectivity
----
+* More options for initial numbers at age now
+* Configuring NAA random effects pretty much the same as before
+    * Except no lognormal adjustment and recruitment is decoupled by default
+
 
 # Configuring natural mortality
----
+
+* Options for estimating constant natural mortality
+  * by Age?
+  * For some ages and not others?
+  * Estimate M for ages 1-3 but make it the same for all ages?
 
 # Configuring catchability
+
+* time-varying catchability might be helpful for
+    * indices that cover a small portion of the stock area
+    * species with life styles that are not observed well by trawl surveys
+
 ---
 
-# Reference points
+# Debugging WHAM
+
+* Use nll reporting to deduce where NA issues are.
+* Re-examine CVs and effective sample sizes from ASAP
+
+# Environmental effects
+
+* If observation error estimates available use them
+    * estimating observation SD can provide rosy picture of effects of covariates
+* Should compare models with and without covariates that both have residual variability
+    * Happens automatically with recruitment, but not as obvious for other things
+
+# Reference points and projections
+
+* Need to be careful of XSPR_R_opt for prevailing static reference points
+* Lots of options for configuring projections for 
+    * F, Catch, M, Covariates, WAA, maturity
+
 ---
 
-# Projections
----
+# Simulation
+
+* Endless possibilities
+    * Self tests
+    * Cross tests
+    * Simulating an imaginary fish stock
+    * Closed-loop simulation
 
 # What we did not cover
 
-* different age composition likelihood options
 * multi-stock, multi-area features
+* details of reference points and projections with multiple fleets
 
 ---
 
 # Contributing to help improve WHAM
 
-* First, you need to have 
+* Needs 
     * git installed
     * a github account
 * You can use git and github through Rstudio or many other coding environments
@@ -103,20 +147,38 @@ options(width = 50)
 # Steps to contributing
 
 * First clone the repo as a `wham` directory. 
-* Using the command line from an appropriate parent directory:
-    * `git clone https://github.com/timjmiller/wham.git`
-* Now you have the WHAM repo!
-* Switch to devel branch
+    * Using the command line from an appropriate parent directory:
+        * `git clone https://github.com/timjmiller/wham.git`
+    * Now you have the WHAM repo!
+* Switch to devel branch (or other branch to work from)
     * `git checkout devel`
 * Create a branch off of devel appropriately named (e.g., "new_branch_name") for what you want to add
     * `git branch new_banch_name`
 * Then switch to your new branch
     *  `git checkout new_branch_name`
 * Make all amazing changes to WHAM
-* Make useful tests of these changes for future development
-* When devtools::test() completes successfully submit pull request!
-* If you intend only to add a useful R function, just need to compile the model 
-    * From an R session in the wham directory run `pkgbuild::compile_dll(debug = FALSE)`
-    * Then `pkgload::load_all()` will load the WHAM package from your local copy of the repo
-    * During development of R functions can repeatedly call `pkgload::load_all()` to update your package
-    * See Roxygen code in other WHAM functions to see how to develop useful help files for the new function(s).
+    * E.g., write a new R function that makes a table with columns: Year, SSB, R, F and corresponding SD, and CIs  
+
+
+---
+
+# Steps to contributing
+
+
+* Make some simple tests of these changes for future development
+    * see `tests` directory of repo for inspiration
+* Make sure your branch is up to date with parent branch
+    * `git fetch`
+    * `git merge devel` (resolve any merge conflicts)
+* Submit pull request when
+    * `devtools::test()` completes successfully 
+    * `devtools::document()` completes successfully
+* Workflow: 
+    * If you intend only to add a useful R function, just need to compile the model once.
+        * From an R session in the wham directory run `pkgbuild::compile_dll(debug = FALSE)`
+        * Then `pkgload::load_all()` will load the WHAM package from your local copy of the repo
+        * During development of R function(s) can repeatedly call `pkgload::load_all()` to update your package with changes to the R function(s).
+        * See Roxygen code in other WHAM functions to see how to write help files for the new function(s).
+    * Developing TMB features is an advanced level of contribution, 
+        * Need to successfully compile the model with the changes.
+        * Overcoming C++ bugs causing failed compilation is advanced level contribution. 

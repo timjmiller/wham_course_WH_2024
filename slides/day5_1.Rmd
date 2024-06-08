@@ -57,7 +57,7 @@ options(width = 50)
 * Fit models to data simulated from a different model.
 * Configure different assumptions about the population for both the operating model and the estimating model.
 * Do a closed-loop simulation with operating model, fitting an estimating model, generating catch advice and incorporating it into the operating model.
-* **See the simulation vignette of the this wham version for greater details**
+* **See the simulation vignette for this wham version for greater details**
 ---
 
 # Getting started
@@ -171,7 +171,7 @@ sim_fn = function(om, input, do.fit = FALSE){
 # An em with an alternative age composition likelihood
 
 * The om assumes (implicitly) that the age composition observations have a multinomial distribution
-* Here is an input where instead assumes a logistic normal (treating 0s as missing).
+* Here is an input that instead assumes a logistic normal (treating 0s as missing).
 
 ```{r, eval=TRUE, results = "hide"}
 input_em <- prepare_wham_input(
